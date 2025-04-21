@@ -110,7 +110,7 @@ def list_files():
         if not files:
             log("📁 No files stored in HDFS.")
         else:
-            log("📂 Files in HDFS:", files)
+            log(f"📂 Files in HDFS: {files}")
 
         return jsonify(files), 200
     except Exception as e:

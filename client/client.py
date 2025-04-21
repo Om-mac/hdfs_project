@@ -1,7 +1,8 @@
-import os
+from pathlib import Path
 import requests
 from core.logger import log
 from client.file_splitter import FileSplitter
+
 
 class HDFSClient:
     def __init__(self, namenode_url, block_size):
@@ -10,12 +11,14 @@ class HDFSClient:
         self.splitter = FileSplitter(block_size)
 
     def upload_file(self, file_path):
-        if not os.path.exists(file_path):
+        file_path = Path(file_path)
+
+        if not file_path.exists():
             log(f"❌ File '{file_path}' does not exist!", level="error")
             return
 
-        file_name = os.path.basename(file_path)
-        blocks = self.splitter.split_file(file_path)
+        file_name = file_path.name
+        blocks = self.splitter.split_file(str(file_path))
         num_blocks = len(blocks)
 
         log(f"📤 Uploading '{file_name}' in {num_blocks} blocks.")
@@ -118,28 +121,28 @@ class HDFSClient:
             log(f"❌ Exception during file deletion: {e}", level="error")
 
     def list_files(self):
-     try:
-        response = requests.get(f"{self.namenode_url}/files")
-        log(f"📡 Response Code: {response.status_code}", level="info")
+        try:
+            response = requests.get(f"{self.namenode_url}/files")
+            log(f"📡 Response Code: {response.status_code}", level="info")
 
-        if response.status_code == 200:
-            try:
-                files = response.json()
-            except Exception as e:
-                log(f"❌ Failed to parse JSON: {e}", level="error")
-                return
+            if response.status_code == 200:
+                try:
+                    files = response.json()
+                except Exception as e:
+                    log(f"❌ Failed to parse JSON: {e}", level="error")
+                    return
 
-            if isinstance(files, list):
-                if files:
-                    log("📂 Files stored in HDFS:")
-                    for file_name in files:
-                        print(" -", file_name)
+                if isinstance(files, list):
+                    if files:
+                        log("📂 Files stored in HDFS:")
+                        for file_name in files:
+                            print(" -", file_name)
+                    else:
+                        log("📁 No files stored in HDFS yet.")
                 else:
-                    log("📁 No files stored in HDFS yet.")
+                    log("❌ Unexpected response format (not a list)", level="error")
             else:
-                log("❌ Unexpected response format (not a list)", level="error")
-        else:
-            log(f"❌ Server returned error code: {response.status_code}", level="error")
-            log(f"🔁 Response body: {response.text}", level="error")
-     except Exception as e:
-        log(f"❌ Exception fetching file list: {e}", level="error")
+                log(f"❌ Server returned error code: {response.status_code}", level="error")
+                log(f"🔁 Response body: {response.text}", level="error")
+        except Exception as e:
+            log(f"❌ Exception fetching file list: {e}", level="error")
