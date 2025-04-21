@@ -118,17 +118,28 @@ class HDFSClient:
             log(f"❌ Exception during file deletion: {e}", level="error")
 
     def list_files(self):
-        try:
-            response = requests.get(f"{self.namenode_url}/files")
-            if response.status_code == 200:
+     try:
+        response = requests.get(f"{self.namenode_url}/files")
+        log(f"📡 Response Code: {response.status_code}", level="info")
+
+        if response.status_code == 200:
+            try:
                 files = response.json()
-                if not files:
-                    log("📁 No files stored in HDFS yet.")
-                else:
+            except Exception as e:
+                log(f"❌ Failed to parse JSON: {e}", level="error")
+                return
+
+            if isinstance(files, list):
+                if files:
                     log("📂 Files stored in HDFS:")
                     for file_name in files:
                         print(" -", file_name)
+                else:
+                    log("📁 No files stored in HDFS yet.")
             else:
-                log("❌ Could not retrieve file list", level="error")
-        except Exception as e:
-            log(f"❌ Exception fetching file list: {e}", level="error")
+                log("❌ Unexpected response format (not a list)", level="error")
+        else:
+            log(f"❌ Server returned error code: {response.status_code}", level="error")
+            log(f"🔁 Response body: {response.text}", level="error")
+     except Exception as e:
+        log(f"❌ Exception fetching file list: {e}", level="error")

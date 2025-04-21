@@ -7,7 +7,6 @@ import time
 app = Flask(__name__)
 namenode = NameNode()
 
-
 @app.route("/heartbeat_status", methods=["GET"])
 def heartbeat_status():
     now = time.time()
@@ -106,8 +105,17 @@ def get_file_blocks():
 
 @app.route("/files", methods=["GET"])
 def list_files():
-    files = namenode.list_files()
-    return jsonify(files), 200
+    try:
+        files = namenode.list_files()
+        if not files:
+            log("📁 No files stored in HDFS.")
+        else:
+            log("📂 Files in HDFS:", files)
+
+        return jsonify(files), 200
+    except Exception as e:
+        log(f"❌ Error listing files: {e}", level="error")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/delete_file", methods=["POST"])
@@ -117,18 +125,30 @@ def delete_file():
     if not file_name:
         return jsonify({"error": "Missing file_name"}), 400
 
-    namenode.remove_file(file_name)
-    return jsonify({"message": f"File '{file_name}' deleted"}), 200
+    try:
+        namenode.remove_file(file_name)
+        return jsonify({"message": f"File '{file_name}' deleted"}), 200
+    except Exception as e:
+        log(f"❌ Error deleting file: {e}", level="error")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/metadata", methods=["GET"])
 def get_metadata():
-    return jsonify(namenode.metadata.metadata), 200
+    try:
+        return jsonify(namenode.metadata.metadata), 200
+    except Exception as e:
+        log(f"❌ Error fetching metadata: {e}", level="error")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/datanodes", methods=["GET"])
 def get_datanodes():
-    return jsonify(namenode.datanodes), 200
+    try:
+        return jsonify(namenode.datanodes), 200
+    except Exception as e:
+        log(f"❌ Error fetching datanodes: {e}", level="error")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/file_blocks", methods=["GET"])
@@ -137,9 +157,12 @@ def get_file_blocks_api():
     if not file_name:
         log("Missing file_name", level="error")
         return jsonify({"error": "Missing file_name"}), 400
-    blocks = namenode.get_file_blocks(file_name)
-    return jsonify(blocks), 200
-
+    try:
+        blocks = namenode.get_file_blocks(file_name)
+        return jsonify(blocks), 200
+    except Exception as e:
+        log(f"❌ Error fetching file blocks: {e}", level="error")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
