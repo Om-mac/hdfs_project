@@ -1,4 +1,0 @@
-📦 Optional Improvements for Later (not needed now):
-	•	Use random selection instead of [:replication_factor] for better load distribution.
-	•	Track free space or block count per DataNode for smarter placement.
-	•	Show offline vs online DataNodes on the dashboard via the heartbeat timeouts.
