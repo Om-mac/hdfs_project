@@ -1,0 +1,20 @@
+# Core dependencies for Simple HDFS Implementation
+
+# Web framework for NameNode and DataNode APIs
+Flask==3.0.0
+
+# HTTP client library for inter-node communication
+requests==2.31.0
+
+# Werkzeug (Flask dependency) - included for completeness
+Werkzeug==3.0.1
+
+# Optional: For better logging (if you want to upgrade from custom logger)
+# colorlog==6.8.0
+
+# Optional: For enhanced CLI experience
+# click==8.1.7
+
+# Optional: For production deployment
+# gunicorn==21.2.0
+# waitress==2.1.2
