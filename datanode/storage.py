@@ -5,7 +5,7 @@ from core.logger import log
 class BlockStorage:
     def __init__(self, storage_path):
         self.storage_path = storage_path
-        # Ensure the storage directory exists
+
         os.makedirs(self.storage_path, exist_ok=True)
         log(f"✅ Block storage initialized at {self.storage_path}")
 

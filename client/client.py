@@ -88,7 +88,7 @@ class HDFSClient:
                     data = self._get_block_from_datanode(node_url, block_id)
                     if data:
                         block_data.append(data)
-                        break  # Stop after first successful replica
+                        break 
 
             self.splitter.merge_blocks(block_data, output_path)
             log(f"✅ Downloaded file saved to '{output_path}'")

@@ -1,5 +1,3 @@
-# core/logger.py
-
 import datetime
 
 

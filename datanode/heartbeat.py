@@ -14,7 +14,7 @@ class HeartbeatManager:
         """
         self.node_id = node_id
         self.namenode_url = namenode_url
-        self.interval = interval  # seconds
+        self.interval = interval 
 
     def send_heartbeat(self):
         """

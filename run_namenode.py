@@ -11,7 +11,6 @@ namenode = NameNode()
 def heartbeat_status():
     now = time.time()
     status_dict = {}
-
     for node_id, info in namenode.datanodes.items():
         last_heartbeat = info.get("last_heartbeat", 0)
         status = "active" if now - last_heartbeat < Config.HEARTBEAT_TIMEOUT else "inactive"

@@ -10,7 +10,7 @@ class ReplicationManager:
         for _ in range(int(num_blocks)):
             block_id = str(uuid.uuid4())
 
-            # Pick first 'replication_factor' datanodes
+
             chosen = list(datanodes.items())[:replication_factor]
             replicas = [f"http://{info['host']}:{info['port']}" for node_id, info in chosen]
 

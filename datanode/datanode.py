@@ -8,9 +8,7 @@ from datanode.storage import BlockStorage
 from datanode.heartbeat import HeartbeatManager
 
 app = Flask(__name__)
-data_node = None  # Global reference to the DataNode instance
-
-
+data_node = None 
 class DataNode:
     def __init__(self, datanode_id, namenode_url, storage_path, ip="127.0.0.1", port=5001):
         self.datanode_id = datanode_id

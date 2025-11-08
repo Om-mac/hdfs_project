@@ -33,7 +33,6 @@ def read_block():
     else:
         return jsonify({"error": "Block not found"}), 404
 
-
 @app.route('/delete_block', methods=['DELETE'])
 def delete_block():
     block_id = request.args.get("block_id")

@@ -16,7 +16,6 @@ def main():
     block_size = Config.BLOCK_SIZE
 
     client = HDFSClient(namenode_url, block_size)
-
     if action == "upload":
         if file_path:
             client.upload_file(file_path)

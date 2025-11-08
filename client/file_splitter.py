@@ -1,4 +1,4 @@
-# client/file_splitter.py
+
 
 import os
 from core.logger import log
