@@ -2,8 +2,7 @@
 
 class Config:
     # Block size for file chunks (in bytes)
-    BLOCK_SIZE =  1024 * 1024  # 1 MB
-    
+    BLOCK_SIZE = 100 * 1024   # 100 KB = 102400 bytes    
     # Timeout for requests (useful in case network hiccups)
     REQUEST_TIMEOUT = 3  
 
