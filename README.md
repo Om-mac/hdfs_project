@@ -7,6 +7,7 @@ A lightweight, educational implementation of the Hadoop Distributed File System 
 - **Distributed Block Storage**: Files are automatically split into blocks and distributed across multiple DataNodes
 - **Automatic Replication**: Configurable replication factor ensures data durability and availability
 - **Fault Detection**: Heartbeat mechanism continuously monitors DataNode health
+- **Web Dashboard**: A modern, user-friendly web interface to manage files and monitor cluster health
 - **RESTful API**: Clean HTTP-based communication between all components
 - **Metadata Management**: Centralized file-to-block mapping with persistent storage
 - **Simple CLI**: Easy-to-use command-line interface for file operations
@@ -24,13 +25,15 @@ The Hadoop Distributed File System (HDFS) is a distributed file system designed 
 ## 🏗️ Architecture
 
 ```
-                    ┌─────────────────┐
-                    │     Client      │
-                    │  (File I/O API) │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │    NameNode     │
+                    ┌─────────────────┐       ┌─────────────────┐
+                    │     Client      │       │   Web Dashboard │
+                    │  (CLI / API)    │       │   (Port 5005)   │
+                    └────────┬────────┘       └────────┬────────┘
+                             │                         │
+                             └───────────┬─────────────┘
+                                         │
+                                ┌────────▼────────┐
+                                │    NameNode     │
                     │   (Metadata)    │
                     │   Port: 8000    │
                     └────────┬────────┘
@@ -73,10 +76,10 @@ The Hadoop Distributed File System (HDFS) is a distributed file system designed 
 │   ├── logger.py          # Custom logging utility
 │   └── utils.py           # Miscellaneous utilities
 │
-├── webui/                 # Optional: Flask-based UI
-│   ├── app.py             # Flask application
+├── webui/                 # Web Interface
+│   ├── app.py             # Flask application backend
 │   └── templates/
-│       └── dashboard.html
+│       └── index.html     # Dashboard HTML template
 │
 ├── data/                  # Block storage directories
 │   ├── datanode1/
@@ -89,6 +92,7 @@ The Hadoop Distributed File System (HDFS) is a distributed file system designed 
 ├── run_namenode.py        # Launch NameNode
 ├── run_datanode.py        # Launch DataNode
 ├── run_client.py          # Client interaction script
+├── run_webui.py           # Launch Web Dashboard
 └── README.md
 ```
 
@@ -97,123 +101,61 @@ The Hadoop Distributed File System (HDFS) is a distributed file system designed 
 ### Prerequisites
 
 - Python 3.7 or higher
-- Flask and requests libraries
+- Required libraries:
+  ```bash
+  pip install Flask==3.0.0 requests==2.31.0
+  ```
 
-```bash
-pip install flask requests
-```
+### Running the System
 
-### Step 1: Start the NameNode
+You will need to run each component in a separate terminal window.
 
-The NameNode is the brain of the system. Start it first:
-
+**1. Start the NameNode (Master)**
 ```bash
 python3 run_namenode.py
 ```
 
-**Output:**
-```
-[2025-11-08 10:30:00] [INFO] NameNode initialized on port 8000.
-[2025-11-08 10:30:00] [INFO] ✅ NameNode is live and running.
-[2025-11-08 10:30:00] [INFO] 🚀 Starting NameNode HTTP server on http://localhost:8000 ...
-```
+**2. Start DataNodes (Slaves)**
+Run as many DataNodes as you like by changing the ID and Port.
 
-### Step 2: Start DataNodes
-
-Launch multiple DataNodes to create your distributed storage cluster. Each DataNode needs a unique ID, port, and storage directory.
-
-**Terminal 2 - DataNode 1:**
 ```bash
+# Terminal 2
 python3 run_datanode.py --id datanode1 --port 5001 --storage data/datanode1
-```
 
-**Terminal 3 - DataNode 2:**
-```bash
+# Terminal 3
 python3 run_datanode.py --id datanode2 --port 5002 --storage data/datanode2
-```
 
-**Terminal 4 - DataNode 3 (Optional):**
-```bash
+# Terminal 4 (Optional)
 python3 run_datanode.py --id datanode3 --port 5003 --storage data/datanode3
 ```
 
-**Output from each DataNode:**
-```
-[2025-11-08 10:31:00] [INFO] ✅ Block storage initialized at data/datanode1
-[2025-11-08 10:31:00] [INFO] ✅ Registered with NameNode as datanode1
-[2025-11-08 10:31:00] [INFO] 🫀 Heartbeat thread started.
-[2025-11-08 10:31:00] [INFO] 🚀 Starting DataNode API at http://127.0.0.1:5001
+**3. Start the Web Dashboard**
+```bash
+# Terminal 5
+python3 run_webui.py
 ```
 
-### Step 3: Use the Client
+### 🖥️ Accessing the System
 
-Now you can interact with your distributed file system!
+**Web Dashboard:**
+Open your browser and go to: **[http://127.0.0.1:5005](http://127.0.0.1:5005)**
 
-#### 📤 Upload a File
+**Command Line Interface (CLI):**
+You can also use the CLI script to interact with the system:
 
 ```bash
-python3 run_client.py upload sample.pdf
-```
+# Upload a file
+python3 run_client.py upload <file_path>
 
-**What happens:**
-1. File is split into 1MB blocks
-2. NameNode assigns block IDs and DataNode locations
-3. Blocks are uploaded to multiple DataNodes (replicated 2x by default)
-4. Metadata is saved
-
-**Output:**
-```
-[2025-11-08 10:32:00] [INFO] Split 'sample.pdf' into 3 blocks.
-[2025-11-08 10:32:00] [INFO] 📤 Uploading 'sample.pdf' in 3 blocks.
-[2025-11-08 10:32:00] [INFO] 📨 Requesting block assignment from NameNode...
-[2025-11-08 10:32:01] [INFO] ✅ Block abc-123 sent to DataNode at http://127.0.0.1:5001
-[2025-11-08 10:32:01] [INFO] ✅ Block abc-123 sent to DataNode at http://127.0.0.1:5002
-```
-
-#### 📥 Download a File
-
-```bash
-python3 run_client.py download sample.pdf
-```
-
-You'll be prompted for the output path:
-```
-Enter output path to save the file: downloaded_sample.pdf
-```
-
-**What happens:**
-1. Client queries NameNode for block locations
-2. Blocks are retrieved from DataNodes (first available replica)
-3. Blocks are reassembled into the original file
-
-**Verify integrity:**
-```bash
-shasum sample.pdf
-shasum downloaded_sample.pdf
-# Both should produce identical hashes
-```
-
-#### 📋 List All Files
-
-```bash
+# List files
 python3 run_client.py list
-```
 
-**Output:**
-```
-[2025-11-08 10:35:00] [INFO] 📂 Files stored in HDFS:
- - sample.pdf
- - document.txt
- - image.jpg
-```
+# Download a file
+python3 run_client.py download <file_name>
 
-#### 🗑️ Delete a File
-
-```bash
-python3 run_client.py delete sample.pdf
+# Delete a file
+python3 run_client.py delete <file_name>
 ```
-
-**Note:** This removes metadata, but blocks remain on DataNodes (garbage collection not implemented).
 
 ## ⚙️ Configuration
 

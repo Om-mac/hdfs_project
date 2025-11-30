@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import json
+import requests
 from flask import Flask, request, jsonify
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -67,6 +68,21 @@ class NameNode:
         return list(self.metadata.metadata.keys())
 
     def remove_file(self, file_name):
+        # Get blocks before removing metadata
+        blocks = self.metadata.get_file_blocks(file_name)
+        
+        for block in blocks:
+            block_id = block.get("block_id")
+            datanodes = block.get("datanodes", [])
+            
+            for datanode_url in datanodes:
+                try:
+                    # datanode_url is like "http://127.0.0.1:5001"
+                    requests.delete(f"{datanode_url}/delete_block?block_id={block_id}")
+                    log(f"🗑️ Requested deletion of block {block_id} from {datanode_url}")
+                except Exception as e:
+                    log(f"❌ Failed to request deletion from {datanode_url}: {e}", level="error")
+
         self.metadata.remove_file(file_name)
         self.metadata.save_metadata()
         log(f"🗑️ File '{file_name}' removed from metadata.")

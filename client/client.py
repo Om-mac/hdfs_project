@@ -16,7 +16,7 @@ class HDFSClient:
         if not file_path.exists():
             log(f"❌ File '{file_path}' does not exist!", level="error")
             return
-
+        
         file_name = file_path.name
         blocks = self.splitter.split_file(str(file_path))
         num_blocks = len(blocks)

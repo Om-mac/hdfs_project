@@ -1,4 +1,5 @@
 import uuid
+import random
 
 class ReplicationManager:
     def __init__(self, metadata_store):
@@ -10,8 +11,13 @@ class ReplicationManager:
         for _ in range(int(num_blocks)):
             block_id = str(uuid.uuid4())
 
+            # Randomly select DataNodes for better load balancing
+            available_nodes = list(datanodes.items())
+            if len(available_nodes) >= replication_factor:
+                chosen = random.sample(available_nodes, replication_factor)
+            else:
+                chosen = available_nodes
 
-            chosen = list(datanodes.items())[:replication_factor]
             replicas = [f"http://{info['host']}:{info['port']}" for node_id, info in chosen]
 
             block_list.append({
